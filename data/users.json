@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Admin",
+    "age": 25,
+    "role": "admin",
+    "email": "admin@gmail.com",
+    "password": "1234"
+  },
+  {
+    "name": "gridhar",
+    "age": 21,
+    "role": "teammember",
+    "email": "gridhars77@gmail.com",
+    "password": "12345678"
+  },
+  {
+    "name": "veera",
+    "age": 1000,
+    "role": "admin",
+    "email": "veera@gmail.com",
+    "password": "veerasamy"
+  },
+  {
+    "name": "jamie",
+    "role": "team",
+    "email": "jamie@gmail.com",
+    "password": "123"
+  },
+  {
+    "name": "raja",
+    "role": "team",
+    "email": "raja@gmail.com",
+    "password": "123"
+  },
+  {
+    "name": "vishwa",
+    "role": "manager",
+    "email": "va@gmail.com",
+    "password": "123"
+  }
+]
