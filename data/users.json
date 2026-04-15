@@ -37,5 +37,17 @@
     "role": "manager",
     "email": "va@gmail.com",
     "password": "123"
+  },
+  {
+    "name": "vishal",
+    "role": "individual",
+    "email": "v@gmail.com",
+    "password": "123"
+  },
+  {
+    "name": "tamil",
+    "role": "individual",
+    "email": "tamil@gmail.com",
+    "password": "123"
   }
 ]

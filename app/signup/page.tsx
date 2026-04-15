@@ -12,6 +12,7 @@ export default function Signup() {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignup = async () => {
     try {
@@ -114,9 +115,8 @@ export default function Signup() {
           onMouseLeave={handleLeave}
         />
 
-        
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Password"
           value={form.password}
           onChange={(e) =>
@@ -128,6 +128,15 @@ export default function Signup() {
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
         />
+
+        <label style={styles.passwordOption}>
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={(e) => setShowPassword(e.target.checked)}
+          />
+          Show password
+        </label>
 
         
         <button
@@ -195,9 +204,17 @@ const styles = {
     outline: "none",
   },
 
+  passwordOption: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    color: "#fff",
+    fontSize: "14px",
+  },
+
   btn: {
     padding: "12px",
-    background: "linear-gradient(135deg, #22c55e, #16a34a)",
+    background: "linear-gradient(135deg, #3b82f6, #2563eb)",
     border: "none",
     borderRadius: "8px",
     color: "#fff",
