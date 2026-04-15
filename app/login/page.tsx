@@ -11,6 +11,8 @@ export default function Login() {
     password: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleLogin = async () => {
     try {
       const res = await fetch("/api/users");
@@ -51,7 +53,7 @@ export default function Login() {
       <div style={styles.card}>
         <h2 style={{ color: "#fff" }}>Login</h2>
 
-        {/* Email */}
+        
         <input
           placeholder="Email"
           value={form.email}
@@ -78,35 +80,44 @@ export default function Login() {
           }}
         />
 
-        {/* Password */}
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
-          }
-          style={styles.input}
-          onFocus={(e) => {
-            e.currentTarget.style.transform = "scale(1.03)";
-            e.currentTarget.style.boxShadow =
-              "0 0 12px rgba(59,130,246,0.6)";
-            e.currentTarget.style.border = "1px solid #3b82f6";
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.boxShadow = "none";
-            e.currentTarget.style.border = "1px solid #475569";
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-2px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
-        />
+       
+        <div style={styles.passwordContainer}>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) =>
+              setForm({ ...form, password: e.target.value })
+            }
+            style={styles.input}
+            onFocus={(e) => {
+              e.currentTarget.style.transform = "scale(1.03)";
+              e.currentTarget.style.boxShadow =
+                "0 0 12px rgba(59,130,246,0.6)";
+              e.currentTarget.style.border = "1px solid #3b82f6";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.border = "1px solid #475569";
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={styles.showPasswordBtn}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
 
-        {/* Button */}
+        
         <button
           onClick={handleLogin}
           style={styles.btn}

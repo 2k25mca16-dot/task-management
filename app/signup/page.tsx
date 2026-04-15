@@ -41,7 +41,7 @@ export default function Signup() {
     }
   };
 
-  /* 🔥 Input Effects (Reusable) */
+ 
   const handleFocus = (e: any) => {
     e.currentTarget.style.transform = "scale(1.03)";
     e.currentTarget.style.boxShadow =
@@ -68,7 +68,7 @@ export default function Signup() {
       <div style={styles.card}>
         <h2 style={{ color: "#fff" }}>Signup</h2>
 
-        {/* Name */}
+      
         <input
           placeholder="Name"
           value={form.name}
@@ -82,7 +82,7 @@ export default function Signup() {
           onMouseLeave={handleLeave}
         />
 
-        {/* Role */}
+        
         <select
           value={form.role}
           onChange={(e) =>
@@ -100,7 +100,7 @@ export default function Signup() {
           <option value="individual">Individual</option>
         </select>
 
-        {/* Email */}
+        
         <input
           placeholder="Email"
           value={form.email}
@@ -114,7 +114,7 @@ export default function Signup() {
           onMouseLeave={handleLeave}
         />
 
-        {/* Password */}
+        
         <input
           type="password"
           placeholder="Password"
@@ -129,7 +129,7 @@ export default function Signup() {
           onMouseLeave={handleLeave}
         />
 
-        {/* Button */}
+        
         <button
           onClick={handleSignup}
           style={styles.btn}
@@ -157,7 +157,7 @@ export default function Signup() {
   );
 }
 
-/* 🎨 Styles */
+
 const styles = {
   container: {
     height: "100vh",

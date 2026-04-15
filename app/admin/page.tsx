@@ -28,11 +28,11 @@ export default function AdminPage() {
 
   return (
     <div className="flex h-screen bg-slate-800 text-gray-900 font-sans overflow-hidden relative z-0">
-      {/* Geometric Layers */}
+      
       <div className="absolute top-[-10%] right-[-5%] w-96 h-96 border-[40px] border-slate-700/50 rounded-2xl transform rotate-45 z-[-1] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[15%] w-[500px] h-[500px] border-[60px] border-slate-700/40 rounded-3xl transform rotate-45 z-[-1] pointer-events-none"></div>
 
-      {/* Sidebar */}
+     
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col p-6 shadow-sm z-10 shrink-0">
         <h2 className="text-xl font-bold mb-8 flex items-center justify-center text-gray-800 tracking-wide">
           Admin Panel
@@ -61,7 +61,7 @@ export default function AdminPage() {
         </div>
       </aside>
 
-      {/* Main */}
+      
       <main className="flex-1 overflow-y-auto p-10">
         <div className="max-w-6xl mx-auto">
           
@@ -168,9 +168,6 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Reports section removed per request */}
-
-          {/* Footer */}
           <footer className="bg-slate-900 p-6 rounded-2xl shadow-lg mt-12 mb-4 text-center">
              <p className="text-gray-400 font-medium">&copy; {new Date().getFullYear()} Task Management System. Admin Portal.</p>
           </footer>

@@ -79,7 +79,7 @@ export default function TeamDashboard() {
 
       <div className="max-w-5xl mx-auto p-8 relative z-10">
         
-        {/* Header & Nav */}
+      
         <div className="mb-8">
           <header className="bg-slate-900 p-8 rounded-2xl shadow-lg mb-6 flex justify-between items-start">
             <div>
@@ -109,11 +109,11 @@ export default function TeamDashboard() {
           </nav>
         </div>
 
-        {/* Tasks Tab */}
+        
         {activeTab === 'tasks' && (
           <div className="space-y-6">
             
-            {/* Request Panel */}
+           
             <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
               <div className="flex items-center mb-6">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 font-black text-blue-700">
@@ -157,7 +157,7 @@ export default function TeamDashboard() {
               </div>
             </div>
 
-            {/* My Tasks */}
+            
             <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
@@ -230,7 +230,7 @@ export default function TeamDashboard() {
           </div>
         )}
 
-        {/* Directory Tab */}
+        
         {activeTab === 'directory' && (
           <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
              <div className="flex items-center mb-6">
@@ -263,13 +263,13 @@ export default function TeamDashboard() {
           </div>
         )}
 
-        {/* Footer */}
+        
         <footer className="bg-slate-900 p-6 rounded-2xl shadow-lg mt-12 mb-4 text-center">
            <p className="text-gray-400 font-medium">&copy; {new Date().getFullYear()} Task Management System. Team Portal.</p>
         </footer>
       </div>
 
-      {/* COMPLETION MODAL */}
+      
       {completingTask && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
           <div className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl transform scale-100 transition-all">

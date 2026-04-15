@@ -23,7 +23,7 @@ export default function ManagerDashboard() {
     dueDate: "",
   });
 
-  // 🔥 LOAD USERS
+  
   useEffect(() => {
     fetch("/api/users")
       .then((res) => res.json())
@@ -33,7 +33,7 @@ export default function ManagerDashboard() {
 
   const teamUsers = users.filter((u: any) => u.role?.toLowerCase() === "team");
 
-  // 🔥 LOAD REQUESTS & TASKS
+ 
   useEffect(() => {
     const user = localStorage.getItem("loggedUser");
     const stored = JSON.parse(localStorage.getItem("tasks") || "[]");
@@ -50,7 +50,7 @@ export default function ManagerDashboard() {
     setManagerTasks(assignedByMe);
   }, []);
 
-  // 🔥 ASSIGN TASK
+ 
   const addTask = () => {
     const stored = JSON.parse(localStorage.getItem("tasks") || "[]");
 
@@ -71,7 +71,7 @@ export default function ManagerDashboard() {
     window.location.reload();
   };
 
-  // 🔥 TASK MANAGEMENT FUNCTIONS
+  
   const pauseTask = (id: number) => {
     const all = JSON.parse(localStorage.getItem("tasks") || "[]");
     const updated = all.map((t: any) => {
@@ -101,7 +101,7 @@ export default function ManagerDashboard() {
     window.location.reload();
   };
 
-  // 🔥 REQUEST ACTIONS
+ 
   const acceptRequest = (id: number) => {
     const all = JSON.parse(localStorage.getItem("tasks") || "[]");
     const updated = all.map((t: any) =>
@@ -120,13 +120,13 @@ export default function ManagerDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-800 text-gray-900 font-sans relative z-0 overflow-hidden">
-      {/* Geometric Layers */}
+      
       <div className="absolute top-[-10%] right-[-5%] w-96 h-96 border-[40px] border-slate-700/50 rounded-2xl transform rotate-45 z-[-1] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] border-[60px] border-slate-700/40 rounded-3xl transform rotate-45 z-[-1] pointer-events-none"></div>
 
       <div className="max-w-5xl mx-auto p-8 relative z-10">
         
-        {/* Header */}
+       
         <header className="bg-slate-900 p-8 rounded-2xl shadow-lg mb-8 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Manager Dashboard</h1>
@@ -140,7 +140,7 @@ export default function ManagerDashboard() {
           </button>
         </header>
 
-        {/* Stats Row */}
+       
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-6 transform hover:-translate-y-2 transition-all duration-300 flex flex-col justify-center">
             <div className="flex items-center justify-between">
@@ -153,7 +153,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
-        {/* Action Panel */}
+        
         <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 mb-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
           <div className="flex items-center mb-6">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3 font-black text-green-700">
@@ -219,7 +219,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
-        {/* Manage Tasks List */}
+        
         <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 mb-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -264,7 +264,7 @@ export default function ManagerDashboard() {
           )}
         </div>
 
-        {/* Requests List */}
+        
         <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -308,14 +308,14 @@ export default function ManagerDashboard() {
           )}
         </div>
 
-        {/* Footer */}
+        
         <footer className="bg-slate-900 p-6 rounded-2xl shadow-lg mt-12 text-center">
            <p className="text-gray-400 font-medium">&copy; {new Date().getFullYear()} Task Management System. Manager Portal.</p>
         </footer>
 
       </div>
 
-      {/* EDIT TASK MODAL */}
+      
       {editingTask && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
           <div className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl transform scale-100 transition-all">
