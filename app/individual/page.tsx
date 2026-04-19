@@ -75,19 +75,20 @@ export default function UserDashboard() {
 
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col p-6 shadow-sm z-10 shrink-0">
-        <h2 className="text-xl font-bold mb-8 flex justify-center text-gray-800 tracking-wide">
-          User Panel
-        </h2>
+        <div className="mb-8 text-center">
+          <h2 className="text-xl font-bold text-gray-800 tracking-wide">User Panel</h2>
+          <p className="text-sm text-gray-500 mt-2">Track your tasks and progress</p>
+        </div>
         <nav className="flex flex-col gap-2">
           <button 
             onClick={() => setActiveTab("dashboard")}
-            className={`flex justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'dashboard' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-indigo-700 hover:bg-slate-100 hover:text-indigo-800'}`}
+            className={`w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'dashboard' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-indigo-700 hover:bg-slate-100 hover:text-indigo-800'}`}
           >
             Dashboard
           </button>
           <button 
             onClick={() => setActiveTab("tasks")}
-            className={`flex justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'tasks' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-indigo-700 hover:bg-slate-100 hover:text-indigo-800'}`}
+            className={`w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'tasks' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-indigo-700 hover:bg-slate-100 hover:text-indigo-800'}`}
           >
             My Tasks
           </button>
@@ -95,7 +96,7 @@ export default function UserDashboard() {
         <div className="mt-auto pt-6 border-t border-gray-200">
           <button 
             onClick={handleSignOut}
-            className="flex items-center text-left w-full px-4 py-3 bg-sky-500 text-white font-bold hover:bg-sky-600 rounded-lg transition-colors justify-center"
+            className="w-full px-4 py-3 bg-sky-500 text-white font-bold hover:bg-sky-600 rounded-lg transition-colors"
           >
             Sign Out
           </button>

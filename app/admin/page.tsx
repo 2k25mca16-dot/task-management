@@ -34,19 +34,20 @@ export default function AdminPage() {
 
      
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col p-6 shadow-sm z-10 shrink-0">
-        <h2 className="text-xl font-bold mb-8 flex items-center justify-center text-gray-800 tracking-wide">
-          Admin Panel
-        </h2>
+        <div className="mb-8 text-center">
+          <h2 className="text-xl font-bold text-gray-800 tracking-wide">Admin Panel</h2>
+          <p className="text-sm text-gray-500 mt-2">Manage users and system metrics</p>
+        </div>
         <nav className="flex flex-col gap-2">
           <button 
             onClick={() => setActiveTab("dashboard")}
-            className={`flex items-center justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-sky-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800'}`}
+            className={`w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-sky-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800'}`}
           >
             Dashboard
           </button>
           <button 
             onClick={() => setActiveTab("users")}
-            className={`flex items-center justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'users' ? 'bg-blue-600 text-white' : 'bg-sky-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800'}`}
+            className={`w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'users' ? 'bg-blue-600 text-white' : 'bg-sky-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800'}`}
           >
             Users
           </button>
@@ -54,7 +55,7 @@ export default function AdminPage() {
         <div className="mt-auto pt-6 border-t border-gray-200">
           <button 
             onClick={handleSignOut}
-            className="flex items-center text-left w-full px-4 py-3 bg-sky-500 text-white font-bold hover:bg-sky-600 rounded-lg transition-colors justify-center"
+            className="w-full px-4 py-3 bg-sky-500 text-white font-bold hover:bg-sky-600 rounded-lg transition-colors"
           >
             Sign Out
           </button>

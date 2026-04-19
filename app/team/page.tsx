@@ -6,323 +6,395 @@ import { useRouter } from "next/navigation";
 export default function TeamDashboard() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState("tasks"); // 'tasks', 'directory'
+  const [activeTab, setActiveTab] = useState("tasks");
   const [form, setForm] = useState({ name: "", assignedTo: "" });
   const router = useRouter();
 
+  const [completingTask, setCompletingTask] = useState<any | null>(null);
+  const [completionForm, setCompletionForm] = useState({
+    note: "",
+    file: null as File | null,
+  });
+
   const handleSignOut = () => {
     localStorage.removeItem("loggedUser");
-    localStorage.removeItem("userRole"); 
+    localStorage.removeItem("userRole");
     router.push("/");
   };
-  
-  const [completingTask, setCompletingTask] = useState<any | null>(null);
-  const [completionForm, setCompletionForm] = useState({ note: "", file: null as File | null });
 
+  const loggedUser =
+    typeof window !== "undefined"
+      ? localStorage.getItem("loggedUser")
+      : null;
+
+  // ✅ LOAD USERS
   useEffect(() => {
     fetch("/api/users")
       .then((res) => res.json())
       .then((data) => setUsers(data))
-      .catch((err) => console.log("Users API not ready.", err));
+      .catch(() => {});
   }, []);
+
+  // ✅ LOAD TASKS FROM API
+  const loadTasks = () => {
+    fetch("/api/tasks")
+      .then((res) => res.json())
+      .then((data) => {
+        const filtered = data.filter(
+          (t: any) =>
+            t.assignedTo === loggedUser && t.type !== "request"
+        );
+        setTasks(filtered);
+      });
+  };
 
   useEffect(() => {
-    const user = localStorage.getItem("loggedUser");
-    const stored = JSON.parse(localStorage.getItem("tasks") || "[]");
-
-    const filtered = stored.filter(
-      (t: any) => t.assignedTo === user && t.type !== "request"
-    );
-
-    setTasks(filtered);
+    loadTasks();
   }, []);
 
-  const managerUsers = users.filter((u: any) => u.role?.toLowerCase() === "manager");
+  const managerUsers = users.filter(
+    (u: any) => u.role?.toLowerCase() === "manager"
+  );
 
-  const sendRequest = () => {
-    const stored = JSON.parse(localStorage.getItem("tasks") || "[]");
-
+  // ✅ SEND REQUEST (API)
+  const sendRequest = async () => {
     const newTask = {
       id: Date.now(),
       name: form.name,
       assignedTo: form.assignedTo,
-      assignedBy: localStorage.getItem("loggedUser") || "Team Member",
+      assignedBy: loggedUser,
       type: "request",
       status: "Pending",
     };
 
-    localStorage.setItem("tasks", JSON.stringify([...stored, newTask]));
+    await fetch("/api/tasks", {
+      method: "POST",
+      body: JSON.stringify(newTask),
+    });
+
     setForm({ name: "", assignedTo: "" });
-    window.location.reload();
+    loadTasks();
   };
 
-  const submitCompletion = () => {
+  // ✅ COMPLETE TASK (API)
+  const submitCompletion = async () => {
     if (!completingTask) return;
-    
-    const stored = JSON.parse(localStorage.getItem("tasks") || "[]");
-    const updated = stored.map((t: any) =>
-      t.id === completingTask.id 
-        ? { ...t, status: "Completed", completed: true, completionNote: completionForm.note, hasFile: !!completionForm.file } 
-        : t
-    );
-    localStorage.setItem("tasks", JSON.stringify(updated));
+
+    const updated = {
+      ...completingTask,
+      status: "Completed",
+      completed: true,
+      completionNote: completionForm.note,
+      hasFile: !!completionForm.file,
+    };
+
+    await fetch("/api/tasks", {
+      method: "PUT",
+      body: JSON.stringify(updated),
+    });
+
     setCompletingTask(null);
     setCompletionForm({ note: "", file: null });
-    window.location.reload();
+    loadTasks();
   };
 
+  const dashboardCards = [
+    { label: "Total Tasks", value: tasks.length, color: "text-blue-600", bg: "bg-blue-50" },
+    {
+      label: "Completed",
+      value: tasks.filter((t) => t.completed).length,
+      color: "text-green-600", bg: "bg-green-50"
+    },
+    {
+      label: "In Progress",
+      value: tasks.filter((t) => !t.completed && t.status === "In Progress").length,
+      color: "text-amber-600", bg: "bg-amber-50"
+    },
+    {
+      label: "Pending",
+      value: tasks.filter((t) => !t.completed && t.status === "Pending").length,
+      color: "text-purple-600", bg: "bg-purple-50"
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-800 text-gray-900 font-sans relative z-0 overflow-hidden">
-      {/* Geometric Layers */}
-      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 border-[40px] border-slate-700/50 rounded-2xl transform rotate-45 z-[-1] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] border-[60px] border-slate-700/40 rounded-3xl transform rotate-45 z-[-1] pointer-events-none"></div>
-
-      <div className="max-w-5xl mx-auto p-8 relative z-10">
-        
+    <div className="flex h-screen bg-slate-800 text-gray-900 font-sans overflow-hidden relative z-0">
       
-        <div className="mb-8">
-          <header className="bg-slate-900 p-8 rounded-2xl shadow-lg mb-6 flex justify-between items-start">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">Team Dashboard</h1>
-              <p className="text-gray-300 text-lg">Manage your tasks and collaborate with your team</p>
-            </div>
-            <button 
-              onClick={handleSignOut}
-              className="flex items-center px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl transition-colors shadow-md"
-            >
-              Sign Out
-            </button>
-          </header>
-          <nav className="flex gap-2 border-b border-gray-300">
-             <button 
-               onClick={() => setActiveTab('tasks')}
-               className={`px-4 py-3 font-semibold transition-all border-b-2 ${activeTab === 'tasks' ? 'border-blue-600 text-blue-600 bg-blue-50 -mb-0.5' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
-             >
-               My Tasks & Requests
-             </button>
-             <button 
-               onClick={() => setActiveTab('directory')}
-               className={`px-4 py-3 font-semibold transition-all border-b-2 ${activeTab === 'directory' ? 'border-blue-600 text-blue-600 bg-blue-50 -mb-0.5' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
-             >
-               Team Directory
-             </button>
-          </nav>
-        </div>
+      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 border-[40px] border-slate-700/50 rounded-2xl transform rotate-45 z-[-1] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] left-[15%] w-[500px] h-[500px] border-[60px] border-slate-700/40 rounded-3xl transform rotate-45 z-[-1] pointer-events-none"></div>
 
-        
-        {activeTab === 'tasks' && (
-          <div className="space-y-6">
-            
-           
-            <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
-              <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 font-black text-blue-700">
-                  <span className="text-lg">+</span>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">Send a Request</h2>
+     
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col p-6 shadow-sm z-10 shrink-0">
+        <h2 className="text-xl font-bold mb-8 flex items-center justify-center text-gray-800 tracking-wide">
+          Team Panel
+        </h2>
+        <nav className="flex flex-col gap-2">
+          <button 
+            onClick={() => setActiveTab("dashboard")}
+            className={`flex items-center justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'dashboard' ? 'bg-purple-600 text-white' : 'bg-violet-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800'}`}
+          >
+            Dashboard
+          </button>
+          <button 
+            onClick={() => setActiveTab("tasks")}
+            className={`flex items-center justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'tasks' ? 'bg-purple-600 text-white' : 'bg-violet-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800'}`}
+          >
+            My Tasks
+          </button>
+          <button 
+            onClick={() => setActiveTab("requests")}
+            className={`flex items-center justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'requests' ? 'bg-purple-600 text-white' : 'bg-violet-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800'}`}
+          >
+            Send Request
+          </button>
+          <button 
+            onClick={() => setActiveTab("directory")}
+            className={`flex items-center justify-center text-center w-full px-4 py-3 font-bold rounded-lg transition-colors shadow-sm ${activeTab === 'directory' ? 'bg-purple-600 text-white' : 'bg-violet-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800'}`}
+          >
+            Directory
+          </button>
+        </nav>
+        <div className="mt-auto pt-6 border-t border-gray-200">
+          <button 
+            onClick={handleSignOut}
+            className="flex items-center text-left w-full px-4 py-3 bg-sky-500 text-white font-bold hover:bg-sky-600 rounded-lg transition-colors justify-center"
+          >
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      
+      <main className="flex-1 overflow-y-auto p-10">
+        <div className="max-w-6xl mx-auto">
+          
+          {activeTab === "dashboard" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <header className="bg-slate-900 p-8 rounded-2xl shadow-lg mb-10">
+                <h1 className="text-4xl font-bold text-white">Team Dashboard</h1>
+                <p className="text-gray-300 mt-2 text-lg">Overview of your tasks and progress.</p>
+              </header>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                {dashboardCards.map((card, i) => (
+                  <div
+                    key={i}
+                    className="bg-violet-50 p-8 py-10 rounded-3xl border-2 border-purple-100 hover:border-purple-400 hover:shadow-[0_8px_30px_rgb(147,51,234,0.2)] cursor-pointer transition-all flex flex-col justify-center transform hover:-translate-y-2"
+                  >
+                    <p className="text-gray-500 text-base font-bold uppercase tracking-widest mb-3">{card.label}</p>
+                    <h2 className="text-6xl font-black text-gray-900">{card.value}</h2>
+                  </div>
+                ))}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Request Details</label>
+            </div>
+          )}
+
+          {activeTab === "tasks" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <header className="bg-slate-900 p-8 rounded-2xl shadow-lg mb-10">
+                <h1 className="text-4xl font-bold text-white">My Tasks</h1>
+                <p className="text-gray-300 mt-2 text-lg">View and manage your assigned tasks.</p>
+              </header>
+
+              <div className="bg-violet-50 rounded-2xl border border-purple-200 hover:border-purple-400 shadow-[0_8px_30px_rgb(147,51,234,0.15)] hover:shadow-[0_8px_30px_rgb(147,51,234,0.3)] overflow-hidden transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                <div className="p-6 border-b border-gray-100 bg-gray-50">
+                   <h3 className="text-xl font-bold text-gray-900">Task List <span className="text-purple-600 ml-2 text-base">({tasks.length})</span></h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-white border-b border-gray-200 text-sm text-gray-500 font-bold uppercase tracking-wider bg-gray-50/50">
+                        <th className="py-4 px-6 font-semibold">Task</th>
+                        <th className="py-4 px-6 font-semibold">Priority</th>
+                        <th className="py-4 px-6 font-semibold">Status</th>
+                        <th className="py-4 px-6 font-semibold">Due Date</th>
+                        <th className="py-4 px-6 font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {tasks.length === 0 && (
+                         <tr>
+                           <td colSpan={5} className="py-12 text-center text-gray-500 text-lg">No tasks assigned yet.</td>
+                         </tr>
+                      )}
+                      {tasks.map((task: any) => (
+                        <tr key={task.id} className={`transition-all duration-200 border-b border-gray-100 ${task.completed ? 'bg-green-50 text-gray-600' : 'bg-white hover:bg-purple-50/60 hover:-translate-y-1 hover:shadow-sm'}`}>
+                          <td className="py-4 px-6 align-middle">
+                            <p className={`font-bold ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>{task.name}</p>
+                          </td>
+                          <td className="py-4 px-6 align-middle">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              task.priority === 'High' ? 'bg-red-100 text-red-700 border border-red-200' :
+                              task.priority === 'Medium' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                              'bg-green-100 text-green-700 border border-green-200'
+                            }`}>
+                              {task.priority}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 align-middle">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              task.status === 'Completed' ? 'bg-green-100 text-green-700 border border-green-200' :
+                              task.status === 'In Progress' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                              'bg-gray-100 text-gray-700 border border-gray-200'
+                            }`}>
+                              {task.status}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 align-middle text-sm font-bold text-gray-700">
+                            {task.dueDate || "—"}
+                          </td>
+                          <td className="py-4 px-6 align-middle">
+                            {!task.completed && task.status !== "Paused" && (
+                              <button
+                                onClick={() => setCompletingTask(task)}
+                                className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded hover:bg-green-600 transition-colors"
+                              >
+                                Complete
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "requests" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <header className="bg-slate-900 p-8 rounded-2xl shadow-lg mb-10">
+                <h1 className="text-4xl font-bold text-white">Send Request</h1>
+                <p className="text-gray-300 mt-2 text-lg">Submit requests to your manager.</p>
+              </header>
+
+              <div className="bg-violet-50 p-6 rounded-2xl border border-purple-200 hover:border-purple-400 shadow-[0_8px_30px_rgb(147,51,234,0.15)] hover:shadow-[0_8px_30px_rgb(147,51,234,0.3)] mb-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                <div className="flex flex-wrap md:flex-nowrap gap-4 mb-4">
                   <input
-                    type="text"
-                    placeholder="What do you need help with?"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    placeholder="Request description"
+                    className="flex-1 border bg-slate-50 border-gray-300 text-gray-900 font-semibold placeholder-gray-500 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Send To</label>
                   <select
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full md:w-48 border bg-slate-50 border-gray-300 text-gray-900 font-semibold rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     value={form.assignedTo}
                     onChange={(e) => setForm({ ...form, assignedTo: e.target.value })}
                   >
-                    <option value="" disabled>Select a Manager</option>
+                    <option value="">Select Manager</option>
                     {managerUsers.map((u: any, i) => (
                       <option key={i} value={u.email}>{u.name}</option>
                     ))}
                   </select>
-                </div>
-                <div>
-                  <button 
+                  <button
                     onClick={sendRequest}
-                    disabled={!form.name || !form.assignedTo}
-                    className="w-full bg-blue-600 text-white font-semibold px-4 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                    disabled={!form.name.trim() || !form.assignedTo}
+                    className="w-full md:w-32 bg-purple-600 text-white font-bold px-4 py-3 rounded-lg hover:bg-purple-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
                   >
                     Send Request
                   </button>
                 </div>
               </div>
             </div>
+          )}
 
-            
-            <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mr-3 font-black text-amber-700">
-                    <span className="text-lg">#</span>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Your Tasks</h2>
-                    <p className="text-sm text-gray-500">{tasks.length} task{tasks.length !== 1 ? 's' : ''} assigned</p>
-                  </div>
+          {activeTab === "directory" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <header className="bg-slate-900 p-8 rounded-2xl shadow-lg mb-10">
+                <h1 className="text-4xl font-bold text-white">Team Directory</h1>
+                <p className="text-gray-300 mt-2 text-lg">View all team members and managers.</p>
+              </header>
+
+              <div className="bg-violet-50 rounded-2xl border border-purple-200 hover:border-purple-400 shadow-[0_8px_30px_rgb(147,51,234,0.15)] hover:shadow-[0_8px_30px_rgb(147,51,234,0.3)] overflow-hidden transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                <div className="p-6 border-b border-gray-100 bg-gray-50">
+                   <h3 className="text-xl font-bold text-gray-900">Team Members <span className="text-purple-600 ml-2 text-base">({users.length})</span></h3>
                 </div>
-              </div>
-              {tasks.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">No tasks assigned right now</p>
-                  <p className="text-gray-400 text-sm mt-1">Great work staying on top of everything!</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {tasks.map((task, i) => (
-                    <div key={i} className={`flex flex-col p-5 rounded-lg border border-gray-200 transition-all ${task.completed ? 'bg-green-50 border-green-200' : task.status === 'Paused' ? 'bg-gray-100 opacity-70' : 'bg-gray-50 hover:bg-gray-100 hover:border-gray-300'}`}>
-                      <div className="flex justify-between items-center w-full">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${task.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
-                              {task.completed && <span className="text-white text-xs">✓</span>}
-                            </div>
-                            <div>
-                              <h3 className={`font-semibold text-gray-900 ${task.completed ? 'line-through text-gray-400' : ''}`}>{task.name}</h3>
-                              <p className="text-sm text-gray-500">
-                                Assigned by: <span className="font-semibold">{task.assignedBy}</span>
-                                {task.dueDate && <span className={`ml-3 inline-block px-2 py-0.5 rounded-md text-xs font-bold ${task.completed ? 'bg-gray-100 text-gray-500' : 'bg-red-100 text-red-700'}`}>Due: {task.dueDate}</span>}
-                                {task.status === 'Paused' && <span className="ml-3 inline-block px-2 py-0.5 rounded-md text-xs font-bold bg-gray-200 text-gray-700">Paused by Manager</span>}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          {!task.completed && task.status !== 'Paused' ? (
-                            <button 
-                              onClick={() => setCompletingTask(task)}
-                              className="bg-blue-100 text-blue-700 font-semibold px-4 py-2 text-sm rounded-lg hover:bg-blue-200 transition-colors"
-                            >
-                              Complete Task
-                            </button>
-                          ) : task.completed ? (
-                            <span className="text-sm bg-green-100 text-green-700 font-semibold px-4 py-2 rounded-lg">✓ Completed</span>
-                          ) : null}
-                        </div>
-                      </div>
-                      
-                      {/* Completion Notes Rendered */}
-                      {task.completed && (task.completionNote || task.hasFile) && (
-                        <div className="mt-4 pt-4 border-t border-green-200/60 ml-8 text-sm">
-                           {task.completionNote && <p className="text-gray-700 mb-2 whitespace-pre-wrap">"{task.completionNote}"</p>}
-                           {task.hasFile && (
-                             <div className="flex items-center gap-2 text-blue-600 font-medium">
-                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                               File Attached
-                             </div>
-                           )}
-                        </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-white border-b border-gray-200 text-sm text-gray-500 font-bold uppercase tracking-wider bg-gray-50/50">
+                        <th className="py-4 px-6 font-semibold">Name</th>
+                        <th className="py-4 px-6 font-semibold">Email</th>
+                        <th className="py-4 px-6 font-semibold">Role</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {users.length === 0 && (
+                         <tr>
+                           <td colSpan={3} className="py-12 text-center text-gray-500 text-lg">No team members found.</td>
+                         </tr>
                       )}
-                    </div>
-                  ))}
+                      {users.map((user: any) => (
+                        <tr key={user.email} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-6 font-semibold text-gray-900">{user.name}</td>
+                          <td className="py-4 px-6 text-gray-600">{user.email}</td>
+                          <td className="py-4 px-6">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              user.role?.toLowerCase() === 'admin' ? 'bg-red-100 text-red-700 border border-red-200' :
+                              user.role?.toLowerCase() === 'manager' ? 'bg-green-100 text-green-700 border border-green-200' :
+                              user.role?.toLowerCase() === 'team' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                              'bg-gray-100 text-gray-700 border border-gray-200'
+                            }`}>
+                              {user.role || 'Guest'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </div>
             </div>
-            
-          </div>
-        )}
+          )}
 
-        
-        {activeTab === 'directory' && (
-          <div className="bg-sky-50 rounded-xl shadow-[0_8px_30px_rgb(59,130,246,0.15)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.3)] border border-blue-200 hover:border-blue-400 p-8 transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
-             <div className="flex items-center mb-6">
-               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3 font-black text-purple-700">
-                 <span className="text-lg">#</span>
-               </div>
-               <div>
-                 <h2 className="text-2xl font-bold text-gray-900">Team Directory</h2>
-                 <p className="text-sm text-gray-500">{users.length} member{users.length !== 1 ? 's' : ''} in your organization</p>
-               </div>
-             </div>
-             {users.length === 0 ? (
-               <p className="text-gray-500 text-center py-8">No users found.</p>
-             ) : (
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                 {users.map((u, i) => (
-                    <div key={i} className="border border-gray-200 p-5 rounded-lg bg-gradient-to-br from-gray-50 to-white hover:shadow-md transition-shadow">
-                       <div className="flex items-start justify-between">
-                         <div>
-                           <p className="font-bold text-lg text-gray-900">{u.name}</p>
-                           <p className="text-xs font-semibold text-gray-500 uppercase mt-1">{u.role || 'Member'}</p>
-                         </div>
-                         <div className={`w-2 h-2 rounded-full ${u.role?.toLowerCase() === 'manager' ? 'bg-blue-500' : u.role?.toLowerCase() === 'team' ? 'bg-amber-500' : 'bg-gray-400'}`} />
-                       </div>
-                       <p className="text-sm text-gray-600 mt-4 break-all">{u.email}</p>
-                    </div>
-                 ))}
-               </div>
-             )}
-          </div>
-        )}
+          <footer className="bg-slate-900 p-6 rounded-2xl shadow-lg mt-12 mb-4 text-center">
+             <p className="text-gray-400 font-medium">&copy; {new Date().getFullYear()} Task Management System. Team Portal.</p>
+          </footer>
+        </div>
+      </main>
 
-        
-        <footer className="bg-slate-900 p-6 rounded-2xl shadow-lg mt-12 mb-4 text-center">
-           <p className="text-gray-400 font-medium">&copy; {new Date().getFullYear()} Task Management System. Team Portal.</p>
-        </footer>
-      </div>
-
-      
+      {/* COMPLETION MODAL */}
       {completingTask && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl transform scale-100 transition-all">
-            <div className="flex items-center mb-6">
-               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3 text-green-700">✓</div>
-               <h2 className="text-2xl font-bold text-gray-900">Complete Task</h2>
-            </div>
-            
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
-               <span className="text-xs font-bold uppercase text-gray-500 tracking-wider">Submitting Work For</span>
-               <h3 className="font-semibold text-base text-gray-900 mt-1">{completingTask.name}</h3>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Completion Notes (Optional)</label>
-                <textarea 
-                  rows={3}
-                  placeholder="Any context or updates for your manager?"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:outline-none resize-none transition-all"
-                  value={completionForm.note}
-                  onChange={e => setCompletionForm({...completionForm, note: e.target.value})}
-                ></textarea>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Add Attachments (Optional)</label>
-                <input 
-                  type="file"
-                  className="w-full border border-gray-300 border-dashed rounded-lg px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 transition-all cursor-pointer"
-                  onChange={e => setCompletionForm({...completionForm, file: e.target.files ? e.target.files[0] : null})}
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 mt-8">
-                <button 
-                  onClick={() => { setCompletingTask(null); setCompletionForm({note: "", file: null}); }} 
-                  className="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={submitCompletion} 
-                  className="px-5 py-2.5 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-700 shadow-sm transition-colors"
-                >
-                  Confirm Completion
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4 text-gray-900">Complete Task</h2>
+            <textarea
+              value={completionForm.note}
+              onChange={(e) =>
+                setCompletionForm({ ...completionForm, note: e.target.value })
+              }
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none"
+              rows={3}
+              placeholder="Completion notes (optional)"
+            />
+            <input
+              type="file"
+              onChange={(e) =>
+                setCompletionForm({
+                  ...completionForm,
+                  file: e.target.files?.[0] || null,
+                })
+              }
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            />
+            <div className="flex gap-2">
+              <button 
+                onClick={submitCompletion} 
+                className="flex-1 bg-purple-600 text-white font-bold px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Submit Completion
+              </button>
+              <button 
+                onClick={() => setCompletingTask(null)} 
+                className="flex-1 bg-gray-500 text-white font-bold px-4 py-3 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

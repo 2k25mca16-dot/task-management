@@ -49,5 +49,17 @@
     "role": "individual",
     "email": "tamil@gmail.com",
     "password": "123"
+  },
+  {
+    "name": "kandasamy",
+    "role": "team",
+    "email": "kd@gmail.com",
+    "password": "123"
+  },
+  {
+    "name": "gowisk",
+    "role": "manager",
+    "email": "g@gmail.com",
+    "password": "123"
   }
 ]
